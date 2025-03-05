@@ -1,29 +1,38 @@
- using System;
-using System.Collections.Generic;
+using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Windows;
 
-namespace Bingo_
+namespace Bingo_buddy
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
-         
-        private List<int> availableNumbers = new List<int>();
+        private ObservableCollection<int> availableNumbers = new ObservableCollection<int>();
+        private ObservableCollection<int> pickedNumbers = new ObservableCollection<int>();
+        private Random random = new Random();
 
-         
-        public Random random = new Random();
-
+        private int _currentNumber;
+        public int CurrentNumber
+        {
+            get => _currentNumber;
+            set
+            {
+                _currentNumber = value;
+                OnPropertyChanged();
+            }
+        }
         public MainWindow()
         {
             InitializeComponent();
-
-             
+         
             for (int i = 1; i <= 90; i++)
             {
                 availableNumbers.Add(i);
             }
 
-             
             ListBox1.ItemsSource = availableNumbers;
+            ListBox2.ItemsSource = pickedNumbers;
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
@@ -34,18 +43,20 @@ namespace Bingo_
                 return;
             }
 
-            
             int index = random.Next(availableNumbers.Count);
             int pickedNumber = availableNumbers[index];
-             
-            Label.Content = pickedNumber.ToString();
+            CurrentNumber = pickedNumber;
 
-            
-            ListBox2.Items.Add(pickedNumber);
+            Label.Content = CurrentNumber;
 
-             
+            pickedNumbers.Add(pickedNumber);
             availableNumbers.RemoveAt(index);
-            ListBox1.Items.Refresh();  
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
